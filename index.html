@@ -1,0 +1,49 @@
+html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aethereum Cognitive | Cloud-to-Matter OS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Courier New', Courier, monospace; }
+        body { background-color: #050505; color: #ffffff; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; position: relative; }
+        body::before { content: ''; position: absolute; width: 200%; height: 200%; background-image: linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px); background-size: 40px 40px; top: -50%; left: -50%; transform: rotate(15deg); z-index: 1; }
+        .container { position: relative; z-index: 10; text-align: center; width: 90%; max-width: 800px; padding: 40px; }
+        .logo { font-size: 1.2rem; letter-spacing: 6px; color: #00ff88; text-transform: uppercase; margin-bottom: 10px; text-shadow: 0 0 10px rgba(0, 255, 136, 0.5); }
+        h1 { font-size: 2.8rem; font-weight: 300; letter-spacing: -1px; margin-bottom: 20px; color: #ffffff; }
+        p.subtitle { color: #888888; font-size: 1rem; line-height: 1.6; margin-bottom: 40px; }
+        .terminal-box { background: rgba(10, 10, 10, 0.85); border: 1px solid #222222; border-radius: 8px; padding: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); transition: border-color 0.3s ease; }
+        .terminal-box:focus-within { border-color: #00ff88; }
+        .prompt-label { color: #00ff88; text-align: left; margin-bottom: 12px; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
+        .blink { animation: blinker 1s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0; } }
+        .input-line { display: flex; background: #111111; border-radius: 4px; padding: 10px; }
+        input[type="text"] { background: transparent; border: none; outline: none; color: #ffffff; font-size: 1.1rem; width: 100%; font-family: inherit; }
+        button { background: #00ff88; color: #050505; border: none; padding: 12px 30px; font-size: 1rem; font-weight: bold; letter-spacing: 1px; border-radius: 4px; margin-top: 20px; cursor: pointer; transition: all 0.2s ease; text-transform: uppercase; }
+        button:hover { background: #ffffff; box-shadow: 0 0 15px rgba(255, 255, 255, 0.8); }
+        #output { margin-top: 25px; text-align: left; color: #888888; font-size: 0.9rem; line-height: 1.5; min-height: 50px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">Aethereum Cognitive</div>
+        <h1>The Cloud-to-Matter Operating System</h1>
+        <p class="subtitle">Deploy autonomous AI swarms to architect, simulate, and manifest physical reality via the web.</p>
+        <div class="terminal-box">
+            <div class="prompt-label"><span>SYSTEM://AETHER_COG_SWARM_READY ></span><span class="blink">■</span></div>
+            <div class="input-line"><input type="text" id="userPrompt" placeholder="What industry do you want to automate today?"></div>
+            <button onclick="deploySwarm()">Deploy Swarm</button>
+            <div id="output"></div>
+        </div>
+    </div>
+    <script>
+        function deploySwarm() {
+            const input = document.getElementById('userPrompt').value;
+            const outputDiv = document.getElementById('output');
+            if(!input) { outputDiv.innerHTML = "<span style='color: #ff3333;'>Error: Target cannot be empty.</span>"; return; }
+            outputDiv.innerHTML = "<span style='color: #00ff88;'>[INITIALIZING]</span> Connecting to Aether AGI Core...<br>[1/3] Instantiating 10,000 digital engineers...<br>[2/3] Simulating physical atomic blueprints...<br>[3/3] System locked. Ready for execution.";
+        }
+    </script>
+</body>
+</html>
