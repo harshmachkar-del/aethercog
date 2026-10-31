@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from itertools import permutations
 from math import hypot, isfinite
-from typing import Dict, Tuple
+from typing import Dict, Tuple, FrozenSet, Optional
 
 
 @dataclass(frozen=True)
@@ -36,7 +36,6 @@ def total_transport_distance(
     total = 0.0
 
     for (source, destination), flow in material_flows.items():
-
         if source not in stations or destination not in stations:
             raise ValueError(
                 "Material flow references an unknown workstation."
@@ -47,9 +46,9 @@ def total_transport_distance(
                 "Material flow must be finite and non-negative."
             )
 
-        total += (
-            distance(stations[source], stations[destination]) * flow
-        )
+        total += distance(
+            stations[source], stations[destination]
+        ) * flow
 
     return total
 
@@ -57,12 +56,16 @@ def total_transport_distance(
 def optimize_layout(
     stations: Dict[str, Workstation],
     material_flows: Dict[Tuple[str, str], float],
+    fixed_workstations: Optional[FrozenSet[str]] = None,
 ) -> OptimizationResult:
     """
-    Find the lowest-cost assignment of workstations to existing positions.
+    Find the lowest-cost assignment of workstation positions.
 
-    Exhaustively evaluates all possible position assignments.
-    Intended for small layouts containing at most eight workstations.
+    Fixed workstations remain at their original coordinates.
+    Other workstations may exchange positions.
+
+    Exhaustively evaluates valid arrangements.
+    Supports at most eight workstations.
     """
 
     if len(stations) > 8:
@@ -82,11 +85,24 @@ def optimize_layout(
         if not isfinite(station.x) or not isfinite(station.y):
             raise ValueError("Workstation coordinates must be finite.")
 
+    fixed = set(fixed_workstations or ())
+
+    unknown_fixed = fixed - set(stations)
+
+    if unknown_fixed:
+        raise ValueError(
+            "Fixed workstation references an unknown workstation."
+        )
+
     names = sorted(stations)
 
-    positions = [
+    movable_names = [
+        name for name in names if name not in fixed
+    ]
+
+    movable_positions = [
         (stations[name].x, stations[name].y)
-        for name in names
+        for name in movable_names
     ]
 
     original_cost = total_transport_distance(
@@ -97,12 +113,16 @@ def optimize_layout(
     best_layout = None
     evaluated = 0
 
-    for arrangement in permutations(positions):
-
+    for arrangement in permutations(movable_positions):
         candidate = {
-            name: Workstation(name, position[0], position[1])
-            for name, position in zip(names, arrangement)
+            name: stations[name]
+            for name in fixed
         }
+
+        for name, position in zip(movable_names, arrangement):
+            candidate[name] = Workstation(
+                name, position[0], position[1]
+            )
 
         candidate_cost = total_transport_distance(
             candidate, material_flows
