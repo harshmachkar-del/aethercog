@@ -14,6 +14,12 @@ class Workstation:
 
 
 @dataclass(frozen=True)
+class FloorBounds:
+    width: float
+    height: float
+
+
+@dataclass(frozen=True)
 class OptimizationResult:
     stations: Dict[str, Workstation]
     original_cost: float
@@ -32,7 +38,6 @@ def total_transport_distance(
     material_flows: Dict[Tuple[str, str], float],
 ) -> float:
     """Calculate flow-weighted transportation distance."""
-
     total = 0.0
 
     for (source, destination), flow in material_flows.items():
@@ -57,14 +62,14 @@ def optimize_layout(
     stations: Dict[str, Workstation],
     material_flows: Dict[Tuple[str, str], float],
     fixed_workstations: Optional[FrozenSet[str]] = None,
+    floor_bounds: Optional[FloorBounds] = None,
 ) -> OptimizationResult:
     """
     Find the lowest-cost assignment of workstation positions.
 
     Fixed workstations remain at their original coordinates.
-    Other workstations may exchange positions.
-
-    Exhaustively evaluates valid arrangements.
+    Movable workstations exchange existing positions.
+    All positions must remain within optional floor boundaries.
     Supports at most eight workstations.
     """
 
@@ -72,9 +77,6 @@ def optimize_layout(
         raise ValueError(
             "Exhaustive optimization supports at most 8 workstations."
         )
-
-    if len(set(stations)) != len(stations):
-        raise ValueError("Workstation names must be unique.")
 
     for name, station in stations.items():
         if name != station.name:
@@ -85,8 +87,25 @@ def optimize_layout(
         if not isfinite(station.x) or not isfinite(station.y):
             raise ValueError("Workstation coordinates must be finite.")
 
-    fixed = set(fixed_workstations or ())
+    if floor_bounds is not None:
+        if (
+            not isfinite(floor_bounds.width)
+            or not isfinite(floor_bounds.height)
+            or floor_bounds.width <= 0
+            or floor_bounds.height <= 0
+        ):
+            raise ValueError("Floor dimensions must be finite and positive.")
 
+        for station in stations.values():
+            if not (
+                0 <= station.x <= floor_bounds.width
+                and 0 <= station.y <= floor_bounds.height
+            ):
+                raise ValueError(
+                    "Workstation lies outside factory floor boundaries."
+                )
+
+    fixed = set(fixed_workstations or ())
     unknown_fixed = fixed - set(stations)
 
     if unknown_fixed:
@@ -95,7 +114,6 @@ def optimize_layout(
         )
 
     names = sorted(stations)
-
     movable_names = [
         name for name in names if name not in fixed
     ]
